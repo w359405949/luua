@@ -1,0 +1,9 @@
+[submodule "deps/lua"]
+	path = deps/lua
+	url = https://github.com/LuaDist/lua.git
+[submodule "deps/libuv"]
+	path = deps/libuv
+	url = https://github.com/joyent/libuv.git
+[submodule "deps/lcs"]
+	path = deps/lcs
+	url = https://github.com/Yonaba/Lua-Class-System.git
