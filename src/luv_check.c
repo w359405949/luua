@@ -21,7 +21,7 @@ void check_cb(uv_check_t* handle)
 
 int luv_check_start(lua_State* L)
 {
-    uv_timer_t* handle = (uv_timer_t*)lua_touserdata(L, 1);
+    uv_check_t* handle = (uv_check_t*)lua_touserdata(L, 1);
     lua_getfield(L, 2, "coroutine");
     lua_getfield(L, 2, "parent");
     lua_State* coroutine = lua_tothread(L, 5);
@@ -35,7 +35,7 @@ int luv_check_start(lua_State* L)
 
 int luv_check_stop(lua_State* L)
 {
-    uv_timer_t* handle = (uv_timer_t*)lua_touserdata(L, 1);
+    uv_check_t* handle = (uv_check_t*)lua_touserdata(L, 1);
     uv_check_stop(handle);
     return 0;
 }

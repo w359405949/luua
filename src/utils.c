@@ -10,22 +10,42 @@ void stackDump(lua_State* L)
         switch (t) {
             case LUA_TSTRING:
                 {
-                    printf("%s", lua_tostring(L, i));
+                    printf("(%d, %d) %s", i, t, lua_tostring(L, i));
                     break;
                 }
             case LUA_TBOOLEAN:
                 {
-                    printf("%d", lua_toboolean(L, i));
+                    printf("(%d, %d) %d", i, t, lua_toboolean(L, i));
                     break;
                 }
             case LUA_TNUMBER:
                 {
-                    printf("%g", lua_tonumber(L, i));
+                    printf("(%d, %d) %g", i, t, lua_tonumber(L, i));
+                    break;
+                }
+            case LUA_TTABLE:
+                {
+                    lua_pushnil(L);
+                    while (lua_next(L, i) != 0) {
+                        if (lua_type(L, -2) == LUA_TSTRING)
+                        {
+                            printf("%s - %s - %s, \n", lua_typename(L, lua_type(L, -2)), lua_typename(L, lua_type(L, -1)), lua_tostring(L, -2));
+                        }
+                        else if (lua_type(L, -2) == LUA_TNUMBER)
+                        {
+                            printf("%s - %s - %g, \n", lua_typename(L, lua_type(L, -2)), lua_typename(L, lua_type(L, -1)), lua_tonumber(L, -2));
+                        }
+                        else
+                        {
+                            printf("%s - %s, \n", lua_typename(L, lua_type(L, -2)), lua_typename(L, lua_type(L, -1)));
+                        }
+                        lua_pop(L, 1);
+                    }
                     break;
                 }
             default:
                 {
-                    printf("%s", lua_typename(L, i));
+                    printf("(%d, %d) %s", i, t, lua_typename(L, t));
                     break;
                 }
                 printf(" ");

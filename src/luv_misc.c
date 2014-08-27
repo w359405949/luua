@@ -11,6 +11,6 @@ int luv_loop_new(lua_State* L)
 int luv_run(lua_State* L)
 {
     uv_loop_t *loop = lua_touserdata(L, 1);
-    uv_run(loop, UV_RUN_DEFAULT);
+    uv_run(loop, UV_RUN_ONCE);
     return 0;
 }

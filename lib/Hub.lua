@@ -1,28 +1,32 @@
-local coroutine = require "coroutine"
+local uv = require "libluv"
 local LCS = require "LCS"
-local uv = require "uv"
 
-Hub = LCS.class()
+local Hub = LCS.class()
 
 function Hub:init()
     self.parent = self
-    self.loop = uv:new_loop()
-    self.coroutine = coroutine.create(self.start)
+    self.loop = uv.uv_loop_new()
+    self.coroutine = coroutine.create(self._run)
+    self.coroutines = {__mode = "v"}
 end
 
-function Hub:start()
-    self.loop:uv_run()
+function Hub:_run()
+    uv.uv_run(self.loop)
 end
 
 function Hub:join()
-    -- only main coroutine can join
     local running, ismain = coroutine.running()
-    if coroutine.status(self.co) == "dead" then
+    assert(ismain, "may block forever")
+    if coroutine.status(self.coroutine) == "dead" then
         return 0, self.value
-    elseif coroutine.status(self.coroutine) == "normal" then
+    else
         self.value = coroutine.resume(self.coroutine, self)
         return 0, self.value
     end
+end
+
+function Hub:get_current()
+    return self.coroutines[coroutine.running()]
 end
 
 return Hub
