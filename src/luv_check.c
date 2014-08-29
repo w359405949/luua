@@ -1,13 +1,23 @@
 #include <uv.h>
 #include "luv_check.h"
+#include "utils.h"
+
+int luv_check_destroy(lua_State* L)
+{
+    uv_check_t* check = (uv_check_t*)lua_touserdata(L, 1);
+    uv_check_stop(check);
+    return 0;
+}
 
 int luv_check_new(lua_State* L)
 {
     uv_loop_t* loop = (uv_loop_t*)lua_touserdata(L, -1);
     uv_check_t* handle = (uv_check_t*)lua_newuserdata(L, sizeof(uv_check_t));
     uv_check_init(loop, handle);
-
     lua_pushlightuserdata(L, handle);
+
+    /* metatable __gc */
+    luua_setgcmetamethod(L, "uv.uv_check", luv_check_destroy);
     return 1;
 }
 

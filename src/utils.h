@@ -1,6 +1,7 @@
-#ifndef UTILS
-#define UTILS
+#ifndef LUUA_UTILS
+#define LUUA_UTILS
 
-void stackDump(lua_State* L);
+void luua_stackDump(lua_State* L);
+void luua_setgcmetamethod(lua_State* L, const char* name, lua_CFunction gc);
 
-#endif /* UTILS */
+#endif /* LUUA_UTILS */

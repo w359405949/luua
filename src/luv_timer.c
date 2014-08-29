@@ -1,6 +1,14 @@
+#include <stdlib.h>
 #include <uv.h>
 #include "luv_timer.h"
 #include "utils.h"
+
+int luv_timer_destroy(lua_State* L)
+{
+    uv_timer_t* handle = (uv_timer_t*)lua_touserdata(L, 1);
+    uv_timer_stop(handle);
+    return 0;
+}
 
 int luv_timer_new(lua_State* L)
 {
@@ -8,8 +16,12 @@ int luv_timer_new(lua_State* L)
     uv_timer_t* handle = (uv_timer_t*)lua_newuserdata(L, sizeof(uv_timer_t));
     uv_timer_init(loop, handle);
     lua_pushlightuserdata(L, handle);
+
+    /* metatable __gc */
+    luua_setgcmetamethod(L, "uv.uv_timer", luv_timer_destroy);
     return 1;
 }
+
 
 //TODO: check return and do somthing
 void timer_cb(uv_timer_t* handle)

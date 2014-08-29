@@ -1,7 +1,16 @@
 #include <lua.h>
+#include <lauxlib.h>
 #include <stdio.h>
 
-void stackDump(lua_State* L)
+void luua_setgcmetamethod(lua_State* L, const char* name, lua_CFunction gc)
+{
+    luaL_newmetatable(L, name);
+    lua_pushcfunction(L, gc);
+    lua_setfield(L, -2, "__gc");
+    lua_setmetatable(L, -3);
+}
+
+void luua_stackDump(lua_State* L)
 {
     int i;
     int top = lua_gettop(L);
