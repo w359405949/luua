@@ -26,15 +26,13 @@ function Coroutine:notify_links()
 end
 
 function Coroutine:_run()
-    print("??")
     self.value = self:run()
-    self.notify_links()
+    self:notify_links()
 end
 
+-- what you want to do
 function Coroutine:run()
     print("!!")
-    assert(false, "no thing to do")
-    -- what you wnat to do
 end
 
 function Coroutine:resume()

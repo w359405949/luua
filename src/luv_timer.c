@@ -29,10 +29,14 @@ int luv_timer_new(lua_State* L)
 void timer_cb(uv_timer_t* handle)
 {
     lua_State* coroutine = (lua_State*)handle->data;
-    //lua_State* parent = (lua_State*)lua_touserdata(coroutine, 1);
-    //lua_pop(coroutine, 1);
-    //lua_resume(coroutine, parent, 0);
-    lua_resume(coroutine, NULL, 0);
+    lua_State* parent = (lua_State*)lua_touserdata(coroutine, 1);
+    lua_pop(coroutine, 1);
+    int result = lua_resume(coroutine, parent, 1);
+    if (result > 1) {
+        printf("result:%d\n", result);
+        luua_stackDump(coroutine);
+        uv_stop(handle->loop);
+    }
 }
 
 int luv_timer_start(lua_State* L)
@@ -43,10 +47,12 @@ int luv_timer_start(lua_State* L)
     uint64_t timeout = lua_tointeger(L, 3);
     uint64_t repeat = lua_tointeger(L, 4);
     lua_State* coroutine = lua_tothread(L, 5);
-    /*
     lua_State* parent = lua_tothread(L, 6);
+
+    lua_settop(L, 2);
+    lua_xmove(L, coroutine, 1);
+
     lua_pushlightuserdata(coroutine, parent);
-    */
     handle->data = coroutine;
     uv_timer_start(handle, timer_cb, timeout, repeat);
     return 0;

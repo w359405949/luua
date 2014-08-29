@@ -10,14 +10,11 @@ function Luua.get_hub()
 end
 
 function Luua.msleep(timeout)
-    local main, ismain = coroutine.running()
-    if ismain then
-        co = Coroutine(hub)
-        co:wait(timeout)
-    else
-        co = hub:get_current()
-        co:wait(timeout)
+    local coroutine = hub:get_current()
+    if not coroutine then
+        coroutine = Coroutine(hub)
     end
+    coroutine:wait(timeout)
 end
 
 function Luua.sleep(timeout)

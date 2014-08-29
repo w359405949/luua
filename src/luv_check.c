@@ -26,18 +26,16 @@ int luv_check_new(lua_State* L)
 
 void check_cb(uv_check_t* handle)
 {
-    printf("check\n");
     lua_State* coroutine = (lua_State*)handle->data;
     lua_State* parent = (lua_State*)lua_touserdata(coroutine, -1);
-    luua_stackDump(coroutine);
     lua_pop(coroutine, 1);
-    printf("after\n");
-    luua_stackDump(coroutine);
-    int result = lua_resume(coroutine, parent, 0);
+    int result = lua_resume(coroutine, parent, 1);
     if (result > 1) {
+        printf("result:%d\n", result);
+        luua_stackDump(coroutine);
         uv_stop(handle->loop);
     }
-    luaL_traceback(coroutine, coroutine, lua_tostring(coroutine, 1), 1);
+    //luaL_traceback(coroutine, coroutine, lua_tostring(coroutine, 1), 1);
 }
 
 int luv_check_start(lua_State* L)
@@ -47,7 +45,9 @@ int luv_check_start(lua_State* L)
     lua_getfield(L, 2, "parent");
     lua_State* coroutine = lua_tothread(L, 3);
     lua_State* parent = lua_tothread(L, 4);
-    lua_xmove(L, coroutine, 2);
+
+    lua_settop(L, 2);
+    lua_xmove(L, coroutine, 1);
 
     lua_pushlightuserdata(coroutine, parent);
     handle->data = coroutine;
