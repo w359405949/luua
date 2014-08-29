@@ -1,11 +1,14 @@
+#include <lauxlib.h>
 #include <uv.h>
 #include "luv_check.h"
 #include "utils.h"
 
+#define UV_CHECK_METATABLE_NAME "uv.uv_check_t"
+
 int luv_check_destroy(lua_State* L)
 {
-    uv_check_t* check = (uv_check_t*)lua_touserdata(L, 1);
-    uv_check_stop(check);
+    uv_check_t* handle = (uv_check_t*)luaL_checkudata(L, 1, UV_CHECK_METATABLE_NAME);
+    uv_check_stop(handle);
     return 0;
 }
 
@@ -17,25 +20,34 @@ int luv_check_new(lua_State* L)
     lua_pushlightuserdata(L, handle);
 
     /* metatable __gc */
-    luua_setgcmetamethod(L, "uv.uv_check", luv_check_destroy);
+    luua_setgcmetamethod(L, UV_CHECK_METATABLE_NAME, luv_check_destroy);
     return 1;
 }
 
 void check_cb(uv_check_t* handle)
 {
+    printf("check\n");
     lua_State* coroutine = (lua_State*)handle->data;
-    lua_State* parent = (lua_State*)lua_touserdata(coroutine, 1);
+    lua_State* parent = (lua_State*)lua_touserdata(coroutine, -1);
+    luua_stackDump(coroutine);
     lua_pop(coroutine, 1);
-    lua_resume(coroutine, parent, 0);
+    printf("after\n");
+    luua_stackDump(coroutine);
+    int result = lua_resume(coroutine, parent, 0);
+    if (result > 1) {
+        uv_stop(handle->loop);
+    }
+    luaL_traceback(coroutine, coroutine, lua_tostring(coroutine, 1), 1);
 }
 
 int luv_check_start(lua_State* L)
 {
-    uv_check_t* handle = (uv_check_t*)lua_touserdata(L, 1);
+    uv_check_t* handle = (uv_check_t*)luaL_checkudata(L, 1, UV_CHECK_METATABLE_NAME);
     lua_getfield(L, 2, "coroutine");
     lua_getfield(L, 2, "parent");
-    lua_State* coroutine = lua_tothread(L, 5);
-    lua_State* parent = lua_tothread(L, 6);
+    lua_State* coroutine = lua_tothread(L, 3);
+    lua_State* parent = lua_tothread(L, 4);
+    lua_xmove(L, coroutine, 2);
 
     lua_pushlightuserdata(coroutine, parent);
     handle->data = coroutine;
@@ -45,7 +57,7 @@ int luv_check_start(lua_State* L)
 
 int luv_check_stop(lua_State* L)
 {
-    uv_check_t* handle = (uv_check_t*)lua_touserdata(L, 1);
+    uv_check_t* handle = (uv_check_t*)luaL_checkudata(L, 1, UV_CHECK_METATABLE_NAME);
     uv_check_stop(handle);
     return 0;
 }
