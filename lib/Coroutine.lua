@@ -11,12 +11,13 @@ function Coroutine:init(hub)
     self.links = {}
     self.value = nil
 
-    table.insert(self.hub.coroutines, self)
+    self.hub.coroutines[self.coroutine] = self
 end
 
 function Coroutine:start()
-    self.event = uv.uv_check_new(self.loop)
-    uv.uv_check_start(self.event, self)
+    self.event = uv.uv_timer_new(self.loop)
+    uv.uv_timer_start(self.event, self, 1, 0)
+    self.stop_callback = uv.uv_timer_stop
 end
 
 function Coroutine:notify_links()
@@ -32,29 +33,28 @@ end
 
 -- what you want to do
 function Coroutine:run()
-    print("!!")
 end
 
 function Coroutine:resume()
-    uv.uv_check_start(self.event, self)
+    self.event = uv.uv_timer_new(self.loop)
+    uv.uv_timer_start(self.event, self, 1, 0)
+    self.stop_callback = uv.uv_timer_stop
 end
 
 function Coroutine:kill()
     if self:status() ~= "dead" then
-        uv.uv_check_stop(self.event)
+        self.stop_callback(self.event)
     end
 end
 
 function Coroutine:join()
-    local running, ismain = coroutine.running()
-
+    local coroutine = self.hub:get_current()
     if self:status() == "dead" then
         return 0, self.value
-    elseif ismain then
+    elseif not coroutine then
         self.hub:join()
         return 0, self.value
     else
-        local coroutine = self.hub:get_current()
         table.insert(self.links, coroutine)
         coroutine.yield()
         table.remove(self.links, coroutine)
@@ -67,14 +67,11 @@ function Coroutine:status()
 end
 
 function Coroutine:wait(timeout)
-    local running, ismain = coroutine.running()
-    local timer = uv.uv_timer_new(self.hub.loop)
-    uv.uv_timer_start(timer, self, timeout, 0)
-    if ismain then
-        self.hub:join()
-    else
-        coroutine.yield()
-    end
+    assert(self == hub:get_current(), "may block forever")
+    self.event = uv.uv_timer_new(self.loop)
+    uv.uv_timer_start(self.event, self, timeout, 0)
+    self.stop_callback = uv.uv_timer_stop
+    coroutine.yield()
 end
 
 return Coroutine

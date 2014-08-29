@@ -15,8 +15,8 @@ function Hub:_run()
 end
 
 function Hub:join()
-    local running, ismain = coroutine.running()
-    assert(ismain, "may block forever")
+    local co = self:get_current()
+    assert(not co, "may block forever")
     if self:status() == "dead" then
         return 0, self.value
     else

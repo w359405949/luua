@@ -11,9 +11,7 @@ end
 
 function Luua.msleep(timeout)
     local coroutine = hub:get_current()
-    if not coroutine then
-        coroutine = Coroutine(hub)
-    end
+    assert(coroutine, "may block forever")
     coroutine:wait(timeout)
 end
 
