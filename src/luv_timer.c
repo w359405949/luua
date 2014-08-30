@@ -1,10 +1,10 @@
 #include <stdlib.h>
 #include <lauxlib.h>
 #include <uv.h>
+#include "luv_misc.h"
 #include "luv_timer.h"
 #include "utils.h"
 
-#define UV_TIMER_METATABLE_NAME "uv.uv_timer_t"
 
 int luv_timer_destroy(lua_State* L)
 {
@@ -15,7 +15,7 @@ int luv_timer_destroy(lua_State* L)
 
 int luv_timer_new(lua_State* L)
 {
-    uv_loop_t* loop = (uv_loop_t*)lua_touserdata(L, -1);
+    uv_loop_t* loop = (uv_loop_t*)luaL_checkudata(L, 1, UV_LOOP_METATABLE_NAME);
     uv_timer_t* handle = (uv_timer_t*)lua_newuserdata(L, sizeof(uv_timer_t));
     uv_timer_init(loop, handle);
     lua_pushlightuserdata(L, handle);
@@ -33,7 +33,6 @@ void timer_cb(uv_timer_t* handle)
     lua_pop(coroutine, 1);
     int result = lua_resume(coroutine, parent, 1);
     if (result > 1) {
-        printf("result:%d\n", result);
         luua_stackDump(coroutine);
         uv_stop(handle->loop);
     }

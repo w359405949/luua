@@ -1,20 +1,18 @@
 #include <lauxlib.h>
 #include <uv.h>
+#include "luv_misc.h"
 #include "luv_check.h"
 #include "utils.h"
 
-#define UV_CHECK_METATABLE_NAME "uv.uv_check_t"
-
 int luv_check_destroy(lua_State* L)
 {
-    uv_check_t* handle = (uv_check_t*)luaL_checkudata(L, 1, UV_CHECK_METATABLE_NAME);
-    uv_check_stop(handle);
+    luv_check_stop(L);
     return 0;
 }
 
 int luv_check_new(lua_State* L)
 {
-    uv_loop_t* loop = (uv_loop_t*)lua_touserdata(L, -1);
+    uv_loop_t* loop = (uv_loop_t*)luaL_checkudata(L, -1, UV_LOOP_METATABLE_NAME);
     uv_check_t* handle = (uv_check_t*)lua_newuserdata(L, sizeof(uv_check_t));
     uv_check_init(loop, handle);
     lua_pushlightuserdata(L, handle);
@@ -31,7 +29,6 @@ void check_cb(uv_check_t* handle)
     lua_pop(coroutine, 1);
     int result = lua_resume(coroutine, parent, 1);
     if (result > 1) {
-        printf("result:%d\n", result);
         luua_stackDump(coroutine);
         uv_stop(handle->loop);
     }
