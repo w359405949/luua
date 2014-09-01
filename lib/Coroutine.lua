@@ -27,8 +27,6 @@ function Coroutine:notify_links()
 end
 
 function Coroutine:_run()
-    self.stop_callback(self.event)
-
     self.value = self:run()
     self:notify_links()
 end
@@ -73,7 +71,6 @@ function Coroutine:wait(timeout)
     uv.uv_timer_start(self.event, self, timeout, 0)
     self.stop_callback = uv.uv_timer_stop
     coroutine.yield()
-    self.stop_callback(self.event)
 end
 
 return Coroutine
