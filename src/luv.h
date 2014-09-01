@@ -3,6 +3,7 @@
 #include <lua.h>
 #include "luv_timer.h"
 #include "luv_check.h"
+#include "luv_prepare.h"
 #include "luv_misc.h"
 
 static const struct luaL_Reg luv[] = {
@@ -23,6 +24,11 @@ static const struct luaL_Reg luv[] = {
     {"uv_check_new", luv_check_new},
     {"uv_check_start", luv_check_start},
     {"uv_check_stop", luv_check_stop},
+
+    // prepare
+    {"uv_prepare_new", luv_prepare_new},
+    {"uv_prepare_start", luv_prepare_start},
+    {"uv_prepare_stop", luv_prepare_stop},
 
     {NULL, NULL}
 };

@@ -1,7 +1,6 @@
 #ifndef LUV_PREPARE
 #define LUV_PREPARE
 #include <lua.h>
-
 #define UV_PREPARE_METATABLE_NAME "uv.uv_prepare_t"
 
 int luv_prepare_new(lua_State* L);
