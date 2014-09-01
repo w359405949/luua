@@ -8,6 +8,7 @@
 
 int luv_timer_destroy(lua_State* L)
 {
+    lua_settop(L, 1);
     uv_timer_t* handle = (uv_timer_t*)luaL_checkudata(L, 1, UV_TIMER_METATABLE_NAME);
     uv_timer_stop(handle);
     return 0;
@@ -15,10 +16,10 @@ int luv_timer_destroy(lua_State* L)
 
 int luv_timer_new(lua_State* L)
 {
+    lua_settop(L, 1);
     uv_loop_t* loop = (uv_loop_t*)luaL_checkudata(L, 1, UV_LOOP_METATABLE_NAME);
     uv_timer_t* handle = (uv_timer_t*)lua_newuserdata(L, sizeof(uv_timer_t));
     uv_timer_init(loop, handle);
-    lua_pushlightuserdata(L, handle);
 
     /* metatable __gc */
     luua_setgcmetamethod(L, UV_TIMER_METATABLE_NAME, luv_timer_destroy);
@@ -40,6 +41,7 @@ void timer_cb(uv_timer_t* handle)
 
 int luv_timer_start(lua_State* L)
 {
+    lua_settop(L, 4);
     uv_timer_t* handle = (uv_timer_t*)luaL_checkudata(L, 1, UV_TIMER_METATABLE_NAME);
     lua_getfield(L, 2, "coroutine");
     lua_getfield(L, 2, "parent");
@@ -59,6 +61,7 @@ int luv_timer_start(lua_State* L)
 
 int luv_timer_stop(lua_State* L)
 {
+    lua_settop(L, 1);
     uv_timer_t* handle = (uv_timer_t*)luaL_checkudata(L, 1, UV_TIMER_METATABLE_NAME);
     uv_timer_stop(handle);
     return 0;
@@ -66,6 +69,7 @@ int luv_timer_stop(lua_State* L)
 
 int luv_timer_again(lua_State* L)
 {
+    lua_settop(L, 1);
     uv_timer_t* handle = (uv_timer_t*)luaL_checkudata(L, 1, UV_TIMER_METATABLE_NAME);
     uv_timer_again(handle);
     return 0;
@@ -73,6 +77,7 @@ int luv_timer_again(lua_State* L)
 
 int luv_timer_set_repeat(lua_State* L)
 {
+    lua_settop(L, 1);
     uv_timer_t* handle = (uv_timer_t*)luaL_checkudata(L, 1, UV_TIMER_METATABLE_NAME);
     uint64_t repeat = lua_tointeger(L, 2);
     uv_timer_set_repeat(handle, repeat);
@@ -81,6 +86,7 @@ int luv_timer_set_repeat(lua_State* L)
 
 int luv_timer_get_repeat(lua_State* L)
 {
+    lua_settop(L, 1);
     uv_timer_t* handle = (uv_timer_t*)luaL_checkudata(L, 1, UV_TIMER_METATABLE_NAME);
     uint64_t repeat = uv_timer_get_repeat(handle);
     lua_pushinteger(L, repeat);

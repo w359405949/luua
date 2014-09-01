@@ -15,9 +15,9 @@ function Coroutine:init(hub)
 end
 
 function Coroutine:start()
-    self.event = uv.uv_timer_new(self.loop)
-    uv.uv_timer_start(self.event, self, 1, 0)
-    self.stop_callback = uv.uv_timer_stop
+    self.event = uv.uv_prepare_new(self.loop)
+    uv.uv_prepare_start(self.event, self)
+    self.stop_callback = uv.uv_prepare_stop
 end
 
 function Coroutine:notify_links()
@@ -36,9 +36,9 @@ function Coroutine:run()
 end
 
 function Coroutine:resume()
-    self.event = uv.uv_timer_new(self.loop)
-    uv.uv_timer_start(self.event, self, 1, 0)
-    self.stop_callback = uv.uv_timer_stop
+    self.event = uv.uv_prepare_new(self.loop)
+    uv.uv_prepare_start(self.event, self)
+    self.stop_callback = uv.uv_prepare_stop
 end
 
 function Coroutine:kill()

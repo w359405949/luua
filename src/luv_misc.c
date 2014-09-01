@@ -5,6 +5,7 @@
 
 int luv_loop_destroy(lua_State* L)
 {
+    lua_settop(L, 1);
     uv_loop_t* loop = (uv_loop_t*)luaL_checkudata(L, 1, UV_LOOP_METATABLE_NAME);
     uv_stop(loop);
     return 0;
@@ -12,6 +13,7 @@ int luv_loop_destroy(lua_State* L)
 
 int luv_loop_new(lua_State* L)
 {
+    lua_settop(L, 1);
     uv_loop_t *loop = (uv_loop_t*)lua_newuserdata(L, sizeof(uv_loop_t));
     uv_loop_init(loop);
 
@@ -34,6 +36,7 @@ int luv_run(lua_State* L)
 
 int luv_loop_stop(lua_State* L)
 {
+    lua_settop(L, 1);
     uv_loop_t* loop = (uv_loop_t*)luaL_checkudata(L, 1, UV_LOOP_METATABLE_NAME);
     uv_stop(loop);
     return 0;
