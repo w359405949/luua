@@ -4,12 +4,26 @@
 #include <stdio.h>
 #include "utils.h"
 
-void luua_setgcmetamethod(lua_State* L, const char* name, lua_CFunction gc)
+void luua_setgcmetamethod(lua_State* L, const char* tname, lua_CFunction gc)
 {
-    luaL_newmetatable(L, name);
+    luaL_newmetatable(L, tname);
     lua_pushcfunction(L, gc);
     lua_setfield(L, -2, "__gc");
     lua_setmetatable(L, -2);
+}
+
+lua_State* luua_getparentcoroutine(lua_State* L, int index)
+{
+    int top = lua_gettop(L);
+    if (index > top || !lua_istable(L, index)) {
+        return NULL;
+    }
+
+    lua_getfield(L, index, "parent");
+    lua_getfield(L, -1, "coroutine");
+    lua_State* coroutine = lua_tothread(L, -1);
+    lua_settop(L, top);
+    return coroutine;
 }
 
 void luua_stackDump(lua_State* L)

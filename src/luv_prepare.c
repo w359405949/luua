@@ -1,3 +1,4 @@
+#include <assert.h>
 #include <lauxlib.h>
 #include <uv.h>
 #include "luv_misc.h"
@@ -26,7 +27,8 @@ int luv_prepare_new(lua_State* L)
 void prepare_cb(uv_prepare_t* handle)
 {
     lua_State* coroutine = (lua_State*)handle->data;
-    int result = lua_resume(coroutine, NULL, 1);
+    lua_State* parent = luua_getparentcoroutine(coroutine, -1);
+    int result = lua_resume(coroutine, parent, 1);
     if (result > 1) {
         luua_stackDump(coroutine);
         uv_stop(handle->loop);
