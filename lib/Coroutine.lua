@@ -27,11 +27,13 @@ function Coroutine:notify_links()
 end
 
 function Coroutine:_run()
+    self.stop_callback(self.event)
+
     self.value = self:run()
     self:notify_links()
 end
 
--- what you want to do
+-- do what you want
 function Coroutine:run()
 end
 
@@ -48,16 +50,15 @@ function Coroutine:kill()
 end
 
 function Coroutine:join()
-    local coroutine = self.hub:get_current()
     if self:status() == "dead" then
         return 0, self.value
-    elseif not coroutine then
+    elseif not self.hub:get_current() then
         self.hub:join()
         return 0, self.value
     else
-        table.insert(self.links, coroutine)
+        table.insert(self.links, self.hub:get_current())
         coroutine.yield()
-        table.remove(self.links, coroutine)
+        table.remove(self.links, self.hub:get_current())
         return 0, self.value
     end
 end
@@ -67,11 +68,12 @@ function Coroutine:status()
 end
 
 function Coroutine:wait(timeout)
-    assert(self == hub:get_current(), "may block forever")
+    assert(self == self.hub:get_current(), "may block forever")
     self.event = uv.uv_timer_new(self.loop)
     uv.uv_timer_start(self.event, self, timeout, 0)
     self.stop_callback = uv.uv_timer_stop
     coroutine.yield()
+    self.stop_callback(self.event)
 end
 
 return Coroutine
