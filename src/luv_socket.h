@@ -2,6 +2,7 @@
 #define LUV_SOCKET
 
 #include <lua.h>
+#define UV_STREAM_METATABLE_NAME "uv.uv_stream_t"
 
 // tcp
 int luv_tcp_new(lua_State* L);
@@ -21,6 +22,7 @@ int luv_write(lua_State* L);
 int luv_close(lua_State* L);
 int luv_shutdown(lua_State* L);
 
+/*
 // udp
 int luv_udp_new(lua_State* L);
 int luv_udp_bind(lua_State* L);
@@ -33,5 +35,6 @@ int luv_udp_set_broadcast(lua_State* L);
 int luv_udp_set_ttl(lua_State* L);
 int luv_udp_set_multicast_ttl(lua_State* L);
 int luv_udp_set_multicast_loopback(lua_State* L);
+*/
 
 #endif /* LUV_SOCKET */

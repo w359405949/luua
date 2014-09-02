@@ -22,14 +22,15 @@ int luv_tcp_bind(lua_State* L)
     uv_tcp_t* handle = (uv_tcp_t*)lua_touserdata(L, 1);
     const char* host = luaL_checkstring(L, 2);
     int port = luaL_checkint(L, 3);
-    int flags = luaL_checkint(L, 4);
+    int flags = lua_tointeger(L, 4);
 
     struct sockaddr_in address;
     uv_ip4_addr(host, port, &address);
 
     int result = uv_tcp_bind(handle, (struct sockaddr*)&address, flags);
     if (result) {
-        return luaL_error(L, "bind: %s", uv_strerror(result));
+        lua_pushfstring(L, "bind: %s", uv_strerror(result));
+        return 1;
     }
     return 0;
 }
@@ -46,7 +47,6 @@ void connect_cb(uv_connect_t* req, int status)
         uv_stop(req->handle->loop);
     }
 }
-
 
 int luv_tcp_connect(lua_State* L)
 {
@@ -65,7 +65,8 @@ int luv_tcp_connect(lua_State* L)
 
     if (result) {
         free(req);
-        return luaL_error(L, "connect: %s", uv_strerror(result));
+        lua_pushfstring(L, "connect: %s", uv_strerror(result));
+        return 1;
     }
 
     return 0;
@@ -79,7 +80,8 @@ int luv_tcp_nodelay(lua_State* L)
 
     int result = uv_tcp_nodelay(handle, enable);
     if (result) {
-        return luaL_error(L, "nodelay: %s", uv_strerror(result));
+        lua_pushfstring(L, "nodelay: %s", uv_strerror(result));
+        return 1;
     }
     return 0;
 }
@@ -94,7 +96,8 @@ int luv_tcp_keepalive(lua_State* L)
     int result = uv_tcp_keepalive(handle, enable, delay);
 
     if (result) {
-        return luaL_error(L, "keepalive: %s", uv_strerror(result));
+         lua_pushfstring(L, "keepalive: %s", uv_strerror(result));
+         return 1;
     }
     return 0;
 }
@@ -111,10 +114,18 @@ int luv_tcp_getpeername(lua_State* L)
 
 void listen_cb(uv_stream_t* handle, int status)
 {
-    lua_State* coroutine = handle->data;
-    lua_pushinteger(coroutine, status);
-    int result = lua_resume(coroutine, NULL, 1);
-
+    printf("new connection:%d\n", status);
+    lua_State* coroutine = (lua_State*)handle->data;
+    int result = 0;
+    if (status == 0) {
+        uv_tcp_t* peer = (uv_tcp_t*)lua_newuserdata(coroutine, sizeof(uv_tcp_t));
+        uv_tcp_init(handle->loop, peer);
+        result = uv_accept(handle, (uv_stream_t*)peer);
+        if (result != 0) {
+            return;
+        }
+        result = lua_resume(coroutine, NULL, 1);
+    }
     if (result > 1) {
         luua_stackDump(coroutine);
         uv_stop(handle->loop);
@@ -123,24 +134,17 @@ void listen_cb(uv_stream_t* handle, int status)
 
 int luv_listen(lua_State* L)
 {
-    lua_settop(L, 2);
+    lua_settop(L, 3);
     uv_stream_t* handle = (uv_stream_t*)lua_touserdata(L, 1);
-    int backlog = luaL_checkint(L, 2);
+    lua_getfield(L, 2, "coroutine");
+    int backlog = luaL_checkint(L, 3);
+    lua_State* coroutine = lua_tothread(L, 4);
 
+    handle->data = coroutine;
     int result = uv_listen(handle, backlog, listen_cb);
     if (result) {
-        return luaL_error(L, "listen: %s", uv_strerror(result));
-    }
-    return 0;
-}
-
-int luv_accept(lua_State* L)
-{
-    uv_stream_t* handle = (uv_stream_t*)lua_touserdata(L, 1);
-    uv_stream_t* who = (uv_stream_t*)lua_touserdata(L, 2);
-    int result = uv_accept(handle, who);
-    if (result) {
-        return luaL_error(L, "accept: %s", uv_strerror(result));
+        lua_pushfstring(L, "listen: %s", uv_strerror(result));
+        return 1;
     }
     return 0;
 }
@@ -180,5 +184,20 @@ int luv_read_stop(lua_State* L)
     lua_settop(L, 1);
     uv_stream_t* handle = (uv_stream_t*)lua_touserdata(L, 1);
     uv_read_stop(handle);
+    return 0;
+}
+
+int luv_write(lua_State* L)
+{
+    return 0;
+}
+
+int luv_close(lua_State* L)
+{
+    return 0;
+}
+
+int luv_shutdown(lua_State* L)
+{
     return 0;
 }

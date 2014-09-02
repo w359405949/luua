@@ -1,24 +1,21 @@
 local Luua = require "Luua"
 local Coroutine = require "Coroutine"
+local Socket = require "Socket"
 
 local coroutine = spawn(function(self)
-    local i = 1
+    local socket = Socket(Socket.AF_INET, Socket.SOCK_STREAM, 0)
+    socket:bind("0.0.0.0", 8888)
+    socket:listen(10)
     while true do
-        print(i)
-        i = i + 1
-        sleep(0.0002)
+        local client = socket:accept()
     end
 end)
 
-local coroutine2 = spawn(function(self)
-    local i = 1000
-    while true do
-        print(i)
-        i = i + 1
-        sleep(0.0001)
-    end
-end)
-
+--spawn(function(self)
+--    while true do
+--        print("hello")
+--        sleep(1)
+--    end
+--end)
 
 coroutine:join()
-coroutine2:join()

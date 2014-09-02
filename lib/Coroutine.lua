@@ -3,7 +3,6 @@ local LCS = require "LCS"
 local Coroutine = LCS.class()
 
 function Coroutine:init()
-    assert(get_hub(), "Coroutine init:hub can not be nil")
     self.parent = get_current() or get_hub()
     self.hub = get_hub()
     self.loop = get_hub().loop
@@ -35,12 +34,6 @@ end
 function Coroutine:run()
 end
 
-function Coroutine:resume()
-    self.event = uv.uv_prepare_new(self.loop)
-    uv.uv_prepare_start(self.event, self)
-    self.stop_callback = uv.uv_prepare_stop
-end
-
 function Coroutine:kill()
     if self:status() ~= "dead" then
         self.stop_callback(self.event)
@@ -48,6 +41,7 @@ function Coroutine:kill()
 end
 
 function Coroutine:join()
+    assert(self ~= get_current(), "may block forever")
     if self:status() == "dead" then
         return 0, self.value
     elseif not get_current() then
@@ -67,6 +61,7 @@ end
 
 function Coroutine:wait(timeout)
     assert(self == get_current(), "may block forever")
+    self.stop_callback(self.event)
     self.event = uv.uv_timer_new(self.loop)
     uv.uv_timer_start(self.event, self, timeout, 0)
     self.stop_callback = uv.uv_timer_stop
