@@ -31,6 +31,7 @@ static const struct luaL_Reg luv[] = {
     {"uv_prepare_start", luv_prepare_start},
     {"uv_prepare_stop", luv_prepare_stop},
 
+    /*
     // socket
     {"uv_tcp_new", luv_tcp_new},
     {"uv_tcp_bind", luv_tcp_bind},
@@ -47,6 +48,7 @@ static const struct luaL_Reg luv[] = {
     {"uv_write", luv_write},
     {"uv_close", luv_close},
     {"uv_shutdown", luv_shutdown},
+    */
 
     {NULL, NULL}
 };

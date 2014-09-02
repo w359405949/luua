@@ -5,25 +5,27 @@ local Luua = LCS.class()
 
 hub = Hub()
 
-function Luua.get_hub()
+function get_hub()
     return hub
 end
 
-function Luua.msleep(timeout)
+function msleep(timeout)
     local coroutine = hub:get_current()
     assert(coroutine, "may block forever")
     coroutine:wait(timeout)
 end
 
-function Luua.sleep(timeout)
-    Luua.msleep(timeout * 1000)
+function sleep(timeout)
+    msleep(timeout * 1000)
 end
 
-function Luua.spawn(run)
-    local coroutine = Coroutine(hub)
+function spawn(run)
+    local coroutine = Coroutine()
     coroutine.run = run
     coroutine:start()
     return coroutine
 end
 
-return Luua
+function get_current()
+    return hub:get_current()
+end

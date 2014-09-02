@@ -1,19 +1,21 @@
 local Luua = require "Luua"
 local Coroutine = require "Coroutine"
 
-local coroutine = Luua.spawn(function(self)
-    self.i = 1
+local coroutine = spawn(function(self)
+    local i = 1
     while true do
-        --print(self.i)
-        Luua.sleep(0.2)
+        print(i)
+        i = i + 1
+        sleep(0.0002)
     end
 end)
 
-local coroutine2 = Luua.spawn(function(self)
-    self.i = 1000
+local coroutine2 = spawn(function(self)
+    local i = 1000
     while true do
-        --print(self.i)
-        Luua.sleep(0.05)
+        print(i)
+        i = i + 1
+        sleep(0.0001)
     end
 end)
 
