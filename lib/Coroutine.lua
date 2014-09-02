@@ -3,7 +3,6 @@ local LCS = require "LCS"
 local Coroutine = LCS.class()
 
 function Coroutine:init()
-    assert(get_hub(), "Coroutine init:hub can not be nil")
     self.parent = get_current() or get_hub()
     self.hub = get_hub()
     self.loop = get_hub().loop
