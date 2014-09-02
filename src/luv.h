@@ -5,6 +5,7 @@
 #include "luv_check.h"
 #include "luv_prepare.h"
 #include "luv_misc.h"
+#include "luv_socket.h"
 
 static const struct luaL_Reg luv[] = {
 
@@ -29,6 +30,23 @@ static const struct luaL_Reg luv[] = {
     {"uv_prepare_new", luv_prepare_new},
     {"uv_prepare_start", luv_prepare_start},
     {"uv_prepare_stop", luv_prepare_stop},
+
+    // socket
+    {"uv_tcp_new", luv_tcp_new},
+    {"uv_tcp_bind", luv_tcp_bind},
+    {"uv_tcp_connect", luv_tcp_connect},
+    {"uv_tcp_nodelay", luv_tcp_nodelay},
+    {"uv_tcp_keepalive", luv_tcp_keepalive},
+    {"uv_tcp_getsockname", luv_tcp_getsockname},
+    {"uv_tcp_getpeername", luv_tcp_getpeername},
+
+    {"uv_listen", luv_listen},
+    {"uv_accept", luv_accept},
+    {"uv_read_start", luv_read_start},
+    {"uv_read_stop", luv_read_stop},
+    {"uv_write", luv_write},
+    {"uv_close", luv_close},
+    {"uv_shutdown", luv_shutdown},
 
     {NULL, NULL}
 };
