@@ -1,3 +1,4 @@
+#include <assert.h>
 #include <stdlib.h>
 #include <lauxlib.h>
 #include <uv.h>
@@ -19,6 +20,7 @@ int luv_timer_new(lua_State* L)
     lua_settop(L, 1);
     uv_loop_t* loop = (uv_loop_t*)luaL_checkudata(L, 1, UV_LOOP_METATABLE_NAME);
     uv_timer_t* handle = (uv_timer_t*)lua_newuserdata(L, sizeof(uv_timer_t));
+
     uv_timer_init(loop, handle);
 
     /* metatable __gc */
@@ -29,26 +31,33 @@ int luv_timer_new(lua_State* L)
 
 void timer_cb(uv_timer_t* handle)
 {
+    uv_timer_stop(handle);
+
     lua_State* coroutine = (lua_State*)handle->data;
     lua_State* parent = luua_getparentcoroutine(coroutine, -1);
     int result = lua_resume(coroutine, parent, 1);
-    if (result > 1) {
+    if (result > LUA_YIELD) {
         luua_stackDump(coroutine);
         uv_stop(handle->loop);
+        assert(0 && "timer cb");
     }
+    lua_settop(coroutine, 0);
 }
 
 int luv_timer_start(lua_State* L)
 {
     lua_settop(L, 4);
     uv_timer_t* handle = (uv_timer_t*)luaL_checkudata(L, 1, UV_TIMER_METATABLE_NAME);
-    lua_getfield(L, 2, "coroutine");
+    lua_getfield(L, 2, "_coroutine");
     uint64_t timeout = lua_tointeger(L, 3);
     uint64_t repeat = lua_tointeger(L, 4);
     lua_State* coroutine = lua_tothread(L, 5);
 
-    //lua_settop(L, 2);
-    //lua_xmove(L, coroutine, 1);
+    assert(coroutine != NULL && "no coroutine found");
+
+    lua_settop(L, 2);
+    lua_settop(coroutine, 0);
+    lua_xmove(L, coroutine, 1);
 
     handle->data = coroutine;
     uv_timer_start(handle, timer_cb, timeout, repeat);

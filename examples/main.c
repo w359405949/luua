@@ -1,18 +1,15 @@
-#include <lua.hpp>
+#include <lua.h>
+#include <lauxlib.h>
 
 int main()
 {
     lua_State *L = luaL_newstate();
-    lua_State *thread = lua_newthread(L);
     luaL_openlibs(L);
-    lua_pushlightuserdata(thread, L);
-    lua_setglobal(thread, "_parent");
-
-    luaL_loadfile(thread, "test.lua");
-    lua_resume(thread, NULL, 0);
-    //printf("%s\n", lua_tostring(L, -1));
-    lua_getglobal(thread, "_parent");
-    lua_State *parent = (lua_State*)lua_touserdata(thread, -1);
-    printf("%lld %lld %d\n", (long long)parent, (long long)L, parent == L);
+    luaL_loadfile(L, "test.lua");
+    while (1) {
+        lua_pushfstring(L, "%d", lua_gettop(L));
+        lua_resume(L, NULL, 1);
+        printf("back\n");
+    }
     lua_close(L);
 }

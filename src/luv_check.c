@@ -1,3 +1,4 @@
+#include <assert.h>
 #include <lauxlib.h>
 #include <uv.h>
 #include "luv_misc.h"
@@ -25,24 +26,29 @@ int luv_check_new(lua_State* L)
 
 void check_cb(uv_check_t* handle)
 {
+    uv_check_stop(handle);
+
     lua_State* coroutine = (lua_State*)handle->data;
     int result = lua_resume(coroutine, NULL, 1);
-    if (result > 1) {
+    if (result > LUA_YIELD) {
         luua_stackDump(coroutine);
         uv_stop(handle->loop);
+        assert(0 && "check cb");
     }
-    uv_check_stop(handle);
+    lua_settop(coroutine, 0);
 }
 
 int luv_check_start(lua_State* L)
 {
     lua_settop(L, 2);
     uv_check_t* handle = (uv_check_t*)luaL_checkudata(L, 1, UV_CHECK_METATABLE_NAME);
-    lua_getfield(L, 2, "coroutine");
+    lua_getfield(L, 2, "_coroutine");
     lua_State* coroutine = lua_tothread(L, 3);
 
-    //lua_settop(L, 2);
-    //lua_xmove(L, coroutine, 1);
+    assert(coroutine != NULL && "no coroutine found");
+
+    lua_settop(L, 2);
+    lua_xmove(L, coroutine, 1);
 
     handle->data = coroutine;
     uv_check_start(handle, check_cb);

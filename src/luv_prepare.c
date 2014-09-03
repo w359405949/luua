@@ -26,21 +26,27 @@ int luv_prepare_new(lua_State* L)
 
 void prepare_cb(uv_prepare_t* handle)
 {
+    uv_prepare_stop(handle);
+
     lua_State* coroutine = (lua_State*)handle->data;
     lua_State* parent = luua_getparentcoroutine(coroutine, -1);
     int result = lua_resume(coroutine, parent, 1);
-    if (result > 1) {
+    if (result > LUA_YIELD) {
         luua_stackDump(coroutine);
         uv_stop(handle->loop);
+        assert(0 && "prepare cb");
     }
+    lua_settop(coroutine, 0);
 }
 
 int luv_prepare_start(lua_State* L)
 {
     lua_settop(L, 2);
     uv_prepare_t* handle = (uv_prepare_t*)luaL_checkudata(L, 1, UV_PREPARE_METATABLE_NAME);
-    lua_getfield(L, 2, "coroutine");
+    lua_getfield(L, 2, "_coroutine");
     lua_State* coroutine = lua_tothread(L, 3);
+
+    assert(coroutine != NULL && "no coroutine found");
 
     lua_settop(L, 2);
     lua_xmove(L, coroutine, 1);

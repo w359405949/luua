@@ -3,30 +3,32 @@ local LCS = require "LCS"
 local Coroutine = LCS.class()
 
 function Coroutine:init()
-    self.parent = get_current() or get_hub()
-    self.hub = get_hub()
-    self.loop = get_hub().loop
-    self.coroutine = coroutine.create(self._run)
-    self.links = {}
-    self.value = nil
+    self._parent = get_current() or get_hub()
+    self._hub = get_hub()
+    self._loop = get_hub():loop()
+    self._coroutine = coroutine.create(self._run)
+    self._links = {}
+    self._value = nil
 
-    self.hub.coroutines[self.coroutine] = self
+    self._hub._coroutines[self._coroutine] = self
 end
 
 function Coroutine:start()
-    self.event = uv.uv_prepare_new(self.loop)
-    uv.uv_prepare_start(self.event, self)
-    self.stop_callback = uv.uv_prepare_stop
+    assert(self ~= get_current(), "may block forever")
+    self._event = uv.uv_prepare_new(self._loop)
+    uv.uv_prepare_start(self._event, self)
+    self._stop_callback = uv.uv_prepare_stop
 end
 
 function Coroutine:notify_links()
-    for i, co in ipairs(self.links) do
+    for i, co in ipairs(self._links) do
         co.resume()
     end
 end
 
 function Coroutine:_run()
-    self.value = self:run()
+    assert(self._coroutine == coroutine.running(), "do not call _run directly")
+    self._value = self:run()
     self:notify_links()
 end
 
@@ -36,35 +38,35 @@ end
 
 function Coroutine:kill()
     if self:status() ~= "dead" then
-        self.stop_callback(self.event)
+        self._stop_callback(self._event)
     end
 end
 
 function Coroutine:join()
     assert(self ~= get_current(), "may block forever")
     if self:status() == "dead" then
-        return 0, self.value
+        return 0, self._value
     elseif not get_current() then
-        self.hub:join()
-        return 0, self.value
+        self._hub:join()
+        return 0, self._value
     else
-        table.insert(self.links, get_current())
+        table.insert(self._links, get_current())
         coroutine.yield()
-        table.remove(self.links, get_current())
-        return 0, self.value
+        table.remove(self._links, get_current())
+        return 0, self._value
     end
 end
 
 function Coroutine:status()
-    return coroutine.status(self.coroutine)
+    return coroutine.status(self._coroutine)
 end
 
 function Coroutine:wait(timeout)
     assert(self == get_current(), "may block forever")
-    self.stop_callback(self.event)
-    self.event = uv.uv_timer_new(self.loop)
-    uv.uv_timer_start(self.event, self, timeout, 0)
-    self.stop_callback = uv.uv_timer_stop
+    self._stop_callback(self._event)
+    self._event = uv.uv_timer_new(self._loop)
+    uv.uv_timer_start(self._event, self, timeout, 0)
+    self._stop_callback = uv.uv_timer_stop
     coroutine.yield()
 end
 

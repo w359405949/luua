@@ -19,8 +19,8 @@ lua_State* luua_getparentcoroutine(lua_State* L, int index)
         return NULL;
     }
 
-    lua_getfield(L, index, "parent");
-    lua_getfield(L, -1, "coroutine");
+    lua_getfield(L, index, "_parent");
+    lua_getfield(L, -1, "_coroutine");
     lua_State* coroutine = lua_tothread(L, -1);
     lua_settop(L, top);
     return coroutine;
