@@ -67,9 +67,8 @@ function Socket:read(len)
         end
         self.buf = self.buf .. buf
     end
-    local buf = string.sub(self.buf, 1, len)
     self.buf = string.sub(self.buf, len + 1)
-    return buf
+    return string.sub(self.buf, 1, len)
 end
 
 function Socket:write(buf)
