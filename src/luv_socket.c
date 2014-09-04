@@ -283,7 +283,7 @@ void write_cb(uv_write_t* handle, int status)
 int luv_write(lua_State* L)
 {
     lua_settop(L, 3);
-    uv_tcp_t* handle = (uv_tcp_t*)luaL_checkudata(L, 1, UV_STREAM_METATABLE_NAME);
+    uv_stream_t* handle = (uv_stream_t*)luaL_checkudata(L, 1, UV_STREAM_METATABLE_NAME);
     lua_getfield(L, 2, "_coroutine");
     size_t length;
     const char* data = luaL_checklstring(L, 3, &length);
@@ -298,7 +298,7 @@ int luv_write(lua_State* L)
     buf.base = (char*)data;
     buf.len = length;
 
-    int result = uv_write(req, (uv_stream_t*)handle, &buf, 1, write_cb);
+    int result = uv_write(req, handle, &buf, 1, write_cb);
 
     if (result) {
         free(req);

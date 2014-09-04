@@ -33,9 +33,8 @@ local coroutine = spawn(function(self)
     local message = socket:connect("127.0.0.1", 8888)
     print(message)
     while true do
-        socket:send("hello")
+        print(socket:send("hello"))
         sleep(1)
-        print("hello")
     end
 end)
 
